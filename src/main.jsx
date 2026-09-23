@@ -1,29 +1,326 @@
-import React,{useEffect,useMemo,useState} from 'react';
-import {createRoot} from 'react-dom/client';
-import './styles.css';
+import React, { useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import "./styles.css";
 
-const currencies={INR:{symbol:'₹',rate:1,name:'Indian Rupee'},USD:{symbol:'$',rate:.0119,name:'US Dollar'},GBP:{symbol:'£',rate:.0088,name:'British Pound'},EUR:{symbol:'€',rate:.0101,name:'Euro'},AED:{symbol:'د.إ',rate:.0437,name:'UAE Dirham'},SAR:{symbol:'﷼',rate:.0446,name:'Saudi Riyal'},CAD:{symbol:'C$',rate:.0161,name:'Canadian Dollar'},AUD:{symbol:'A$',rate:.0177,name:'Australian Dollar'}};
-const KEY='mahek-sadia-books-v3';
-const starter=[{id:'darmiyan',title:'درمیان',roman:'Darmiyan',author:'مہک سعدیہ',price:199,genre:'Urdu Novel',language:'Urdu',description:'ایک ایسی کہانی جو انسان کو دوسروں میں نہیں، اپنے اندر تلاش کرنے پر مجبور کرے۔',cover:'✦',ebook:null,featured:true}];
-function readBooks(){try{return JSON.parse(localStorage.getItem(KEY))||starter}catch{return starter}}
-function writeBooks(b){localStorage.setItem(KEY,JSON.stringify(b.filter(x=>!x.ebook||typeof x.ebook==='string')))}
-function money(inr,c){const x=inr*currencies[c].rate;return currencies[c].symbol+(c==='INR'?Math.round(x):x.toFixed(2))}
-function App(){
- const [books,setBooks]=useState(readBooks),[currency,setCurrency]=useState('INR'),[adminOpen,setAdminOpen]=useState(false),[logged,setLogged]=useState(false),[reader,setReader]=useState(null),[query,setQuery]=useState(''),[notice,setNotice]=useState('');
- useEffect(()=>{const saved=localStorage.getItem(KEY);if(saved)try{setBooks(JSON.parse(saved))}catch{}},[]);
- const filtered=useMemo(()=>books.filter(b=>(b.title+' '+b.roman+' '+b.genre).toLowerCase().includes(query.toLowerCase())),[books,query]);
- const login=e=>{e.preventDefault(); if(e.currentTarget.password.value==='mahek2026'){setLogged(true);setNotice('Welcome to your admin dashboard.')}else setNotice('Incorrect admin password.')};
- const addBook=e=>{e.preventDefault();const f=e.currentTarget,file=f.pdf.files[0];if(!file||file.type!=='application/pdf')return setNotice('Please select a PDF file.');const r=new FileReader();r.onload=()=>{const b={id:crypto.randomUUID(),title:f.title.value,roman:f.roman.value||f.title.value,author:'مہک سعدیہ',price:Number(f.price.value||0),genre:f.genre.value||'Urdu Novel',language:'Urdu',description:f.description.value||'Digital edition by Mahek Sadia.',cover:'✦',ebook:r.result,featured:false};const next=[...books,b];setBooks(next);localStorage.setItem(KEY,JSON.stringify(next));f.reset();setNotice('Book added to your library.');};r.readAsDataURL(file)};
- const remove=id=>{const next=books.filter(b=>b.id!==id);setBooks(next);localStorage.setItem(KEY,JSON.stringify(next));setNotice('Book removed.')};
- return <div className="app">
- <header><div className="brand"><div className="mark">م</div><div><strong>Mahek Sadia</strong><span>مہک سعدیہ · Digital Bookstore</span></div></div><nav><button onClick={()=>document.getElementById('books').scrollIntoView({behavior:'smooth'})}>Books</button><button onClick={()=>document.getElementById('about').scrollIntoView({behavior:'smooth'})}>About</button></nav><div className="actions"><select value={currency} onChange={e=>setCurrency(e.target.value)}>{Object.entries(currencies).map(([k,v])=><option key={k}>{k} — {v.name}</option>)}</select><button className="adminBtn" onClick={()=>setAdminOpen(true)}>Admin</button></div></header>
- <main><section className="hero"><div className="heroText"><p className="eyebrow">THE OFFICIAL DIGITAL BOOKSTORE</p><h1>Stories that bring<br/><em>you back to yourself.</em></h1><p className="lead">Urdu novels and digital books by <b>Mahek Sadia</b> — written between duniya, deen, emotions and the quiet truths we carry inside.</p><button className="primary" onClick={()=>document.getElementById('books').scrollIntoView({behavior:'smooth'})}>Explore Books <span>→</span></button></div><div className="heroArt"><div className="bookGlow"><span>مہک<br/>سعدیہ</span><small>BOOKS</small></div></div></section>
- <section className="quote"><span>“</span><p>کچھ کہانیاں ختم نہیں ہوتیں،<br/>وہ انسان کے اندر ایک سوال چھوڑ جاتی ہیں۔</p></section>
- <section id="books" className="library"><div className="sectionHead"><div><p className="eyebrow">THE LIBRARY</p><h2>Books by Mahek Sadia</h2></div><div className="search"><span>⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search books..."/></div></div><div className="grid">{filtered.map(b=><article className="card" key={b.id}><div className="cover"><div className="coverInner"><small>مہک سعدیہ</small><strong>{b.title}</strong><i>{b.roman}</i><span>✦</span></div></div><div className="cardBody"><p className="tag">{b.genre} · {b.language}</p><h3>{b.title}</h3><p>{b.description}</p><div className="cardFoot"><b>{money(b.price,currency)}</b>{b.ebook?<button className="read" onClick={()=>setReader(b)}>Read ebook →</button>:<button className="buy" onClick={()=>setNotice('Payment checkout can be connected next.')}>Buy ebook</button>}</div></div></article>)}</div></section>
- <section id="about" className="about"><div><p className="eyebrow">ABOUT THE AUTHOR</p><h2>Words, written with purpose.</h2></div><p>Mahek Sadia is a software engineer who writes Urdu fiction and poetry. Her stories explore the space between who we are, who people expect us to be, and the person Allah calls us to become.</p></section></main>
- <footer><div><strong>Mahek Sadia</strong><span>مہک سعدیہ</span></div><p>© {new Date().getFullYear()} Mahek Sadia. All rights reserved.</p></footer>
- {notice&&<div className="toast" onClick={()=>setNotice('')}>{notice} <b>×</b></div>}
- {adminOpen&&<div className="overlay"><div className="adminPanel"><button className="close" onClick={()=>setAdminOpen(false)}>×</button>{!logged?<><p className="eyebrow">PRIVATE AREA</p><h2>Admin Login</h2><p className="muted">Manage your bookstore, add ebooks and keep your library updated.</p><form onSubmit={login}><label>Admin password<input name="password" type="password" placeholder="Enter password" required/></label><button className="primary full">Enter Dashboard</button></form></>:<><div className="dashHead"><div><p className="eyebrow">ADMIN DASHBOARD</p><h2>Your Book Library</h2></div><button className="logout" onClick={()=>setLogged(false)}>Log out</button></div><form className="uploadForm" onSubmit={addBook}><h3>Add new ebook</h3><div className="two"><label>Book title<input name="title" required placeholder="مثلاً درمیان"/></label><label>Roman title<input name="roman" placeholder="Darmiyan"/></label></div><div className="two"><label>Price in INR ₹<input name="price" type="number" min="0" required placeholder="199"/></label><label>Genre<input name="genre" placeholder="Urdu Novel"/></label></div><label>Description<textarea name="description" placeholder="Short description..."/></label><label className="file"><span>Choose PDF ebook</span><input name="pdf" type="file" accept="application/pdf" required/></label><button className="primary full">＋ Upload & Add Book</button></form><div className="inventory"><h3>Current books</h3>{books.map(b=><div className="inventoryRow" key={b.id}><div><strong>{b.title}</strong><span>{b.ebook?'PDF uploaded':'Store listing'} · ₹{b.price}</span></div>{b.id!=='darmiyan'&&<button onClick={()=>remove(b.id)}>Delete</button>}</div>)}</div></>}</div></div>}
- {reader&&<div className="reader"><div className="readerTop"><b>{reader.title}</b><button onClick={()=>setReader(null)}>Close ×</button></div><iframe title={reader.title} src={reader.ebook}/></div>}
- </div>}
-createRoot(document.getElementById('root')).render(<App/>);
+const ADMIN_PASSWORD = "mahek2026";
+
+function App() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [books, setBooks] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("mahek_books")) || [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [pdf, setPdf] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem("mahek_books", JSON.stringify(books));
+  }, [books]);
+
+  const login = (e) => {
+    e.preventDefault();
+
+    if (password === ADMIN_PASSWORD) {
+      setIsAdmin(true);
+      setError("");
+      setPassword("");
+    } else {
+      setError("Incorrect password.");
+    }
+  };
+
+  const addBook = (e) => {
+    e.preventDefault();
+
+    if (!title || !pdf) {
+      alert("Please enter the book title and select a PDF.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const newBook = {
+        id: Date.now(),
+        title,
+        price: price || "99",
+        description,
+        pdf: reader.result,
+      };
+
+      const updated = [...books, newBook];
+
+      setBooks(updated);
+      setTitle("");
+      setPrice("");
+      setDescription("");
+      setPdf(null);
+
+      document.getElementById("pdfInput").value = "";
+
+      alert("Book added successfully.");
+    };
+
+    reader.readAsDataURL(pdf);
+  };
+
+  const deleteBook = (id) => {
+    if (!confirm("Delete this book?")) return;
+
+    setBooks(books.filter((book) => book.id !== id));
+  };
+
+  return (
+    <div className="site">
+
+      <header className="navbar">
+        <div>
+          <div className="logo">MAHEK SADIA</div>
+          <div className="tagline">Official Digital Bookstore</div>
+        </div>
+
+        <button
+          className="adminButton"
+          onClick={() => setIsAdmin(!isAdmin)}
+        >
+          {isAdmin ? "STORE" : "ADMIN"}
+        </button>
+      </header>
+
+      {!isAdmin ? (
+        <>
+          <section className="hero">
+            <div className="smallTitle">WORDS • FAITH • STORIES</div>
+
+            <h1>
+              A little world of words,
+              <br />
+              <i>by Mahek Sadia.</i>
+            </h1>
+
+            <p>
+              Urdu stories, poetry and books written from the space between
+              emotions, faith and life.
+            </p>
+          </section>
+
+          <section className="booksSection">
+            <div className="sectionTitle">
+              <h2>Books</h2>
+              <span>{books.length} books</span>
+            </div>
+
+            {books.length === 0 ? (
+              <div className="empty">
+                <h3>No books yet.</h3>
+                <p>
+                  Open the Admin panel to upload your first digital book.
+                </p>
+              </div>
+            ) : (
+              <div className="bookGrid">
+                {books.map((book) => (
+                  <div className="bookCard" key={book.id}>
+
+                    <div className="bookCover">
+                      <span>
+                        MAHEK
+                        <br />
+                        SADIA
+                      </span>
+                    </div>
+
+                    <div className="bookInfo">
+                      <h3>{book.title}</h3>
+
+                      <div className="author">
+                        Mahek Sadia
+                      </div>
+
+                      <p>{book.description}</p>
+
+                      <div className="price">
+                        ₹{book.price}
+                      </div>
+
+                      <a
+                        className="readButton"
+                        href={book.pdf}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Read Ebook
+                      </a>
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      ) : (
+        <section className="adminPage">
+
+          <div className="adminHeader">
+            <div>
+              <div className="smallTitle">PRIVATE ADMIN</div>
+              <h1>Book Manager</h1>
+              <p>Add and manage your digital books.</p>
+            </div>
+
+            <button
+              className="storeButton"
+              onClick={() => setIsAdmin(false)}
+            >
+              ← Store
+            </button>
+          </div>
+
+          <div className="adminPanel">
+
+            <h2>Add New Book</h2>
+
+            <form onSubmit={addBook}>
+
+              <label>
+                Book Title
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Darmiyan"
+                />
+              </label>
+
+              <label>
+                Price (INR)
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="99"
+                />
+              </label>
+
+              <label>
+                Description
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Write a short description..."
+                />
+              </label>
+
+              <label>
+                PDF Ebook
+                <input
+                  id="pdfInput"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) =>
+                    setPdf(e.target.files?.[0] || null)
+                  }
+                />
+              </label>
+
+              <button className="uploadButton" type="submit">
+                Upload Book
+              </button>
+
+            </form>
+
+          </div>
+
+          <div className="adminPanel">
+
+            <h2>Uploaded Books</h2>
+
+            {books.length === 0 ? (
+              <p className="muted">No books uploaded.</p>
+            ) : (
+              books.map((book) => (
+                <div className="adminBook" key={book.id}>
+
+                  <div>
+                    <strong>{book.title}</strong>
+                    <small>
+                      ₹{book.price} · Mahek Sadia
+                    </small>
+                  </div>
+
+                  <div className="adminActions">
+
+                    <a
+                      href={book.pdf}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open
+                    </a>
+
+                    <button
+                      className="deleteButton"
+                      onClick={() => deleteBook(book.id)}
+                    >
+                      Delete
+                    </button>
+
+                  </div>
+
+                </div>
+              ))
+            )}
+
+          </div>
+
+          <div className="adminNote">
+            <strong>Admin password:</strong> mahek2026
+          </div>
+
+        </section>
+      )}
+
+      {!isAdmin && (
+        <section className="loginSection">
+
+          <h2>Author Admin</h2>
+
+          <p>Private access for Mahek Sadia.</p>
+
+          <form onSubmit={login}>
+
+            <input
+              type="password"
+              placeholder="Admin password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <button type="submit">
+              Enter Admin
+            </button>
+
+          </form>
+
+          {error && <div className="error">{error}</div>}
+
+        </section>
+      )}
+
+      <footer>
+        © 2026 Mahek Sadia · Software Engineer · Writer · Poet
+      </footer>
+
+    </div>
+  );
+}
+
+createRoot(document.getElementById("root")).render(<App />);
