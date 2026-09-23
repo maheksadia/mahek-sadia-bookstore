@@ -8,7 +8,7 @@ import "./styles.css";
 const ADMIN_PASSWORD = "mahek2026";
 
 const SUPABASE_URL = "https://vvvkuyepfkerkcztlpvd.supabase.co";
-const SUPABASE_KEY = "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+const SUPABASE_KEY = "https://vvvkuyepfkerkcztlpvd.supabase.co"
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
