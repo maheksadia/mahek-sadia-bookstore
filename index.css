@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+  .urdu {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    direction: rtl;
+    line-height: 2.15;
+  }
+  ::selection {
+    background: #A9834A;
+    color: #FBF8F1;
+  }
+  :focus-visible {
+    outline: 2px solid #A9834A;
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-ink text-cream px-7 py-3 text-sm tracking-wide hover:bg-charcoal transition-colors duration-200;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 border border-ink text-ink px-7 py-3 text-sm tracking-wide hover:bg-ink hover:text-cream transition-colors duration-200;
+  }
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 bg-gold text-cream px-7 py-3 text-sm tracking-wide hover:bg-[#93713D] transition-colors duration-200;
+  }
+  .label-eyebrow {
+    @apply text-xs tracking-[0.2em] text-gold font-medium;
+  }
+  .container-page {
+    @apply mx-auto max-w-content px-5 sm:px-8 lg:px-10;
+  }
+  /* Used as a standalone horizontal rule: <div className="hairline w-24 my-8" /> */
+  .hairline {
+    @apply border-t border-line block;
+  }
+}
